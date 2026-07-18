@@ -20,7 +20,9 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      // ── Always clear stale data immediately on auth change ──────────────────
+      // Reset loading at START of every auth change — prevents dashboard
+      // from rendering before dbUser is fetched from MongoDB
+      setLoading(true);
       setDbUser(null);
       setUser(firebaseUser);
       currentUidRef.current = firebaseUser?.uid || null;
@@ -28,7 +30,6 @@ export function AuthProvider({ children }) {
       if (firebaseUser) {
         try {
           const { data } = await getMe();
-          // Only apply if the Firebase user hasn't changed while we were fetching
           if (currentUidRef.current === firebaseUser.uid) {
             setDbUser(data);
           }

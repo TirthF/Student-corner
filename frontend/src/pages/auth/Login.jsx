@@ -1,35 +1,20 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { GraduationCap, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import toast from 'react-hot-toast';
 
 export default function Login() {
-  const { login, dbUser, role } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  // Show unauthorized toast if redirected from a protected route
-  useState(() => {
-    if (location.state?.unauthorized) {
-      toast.error(`Access denied. You don't have permission to access that page.`);
-    }
-  }, []);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
     setError('');
-  };
-
-  const getRedirectPath = (userRole) => {
-    if (userRole === 'admin') return '/admin';
-    if (userRole === 'faculty') return '/dashboard';
-    return '/dashboard';
   };
 
   const handleSubmit = async (e) => {
@@ -38,13 +23,11 @@ export default function Login() {
       setError('Please enter both email and password.');
       return;
     }
-    setLoading(true);
+    setSubmitting(true);
     setError('');
-
     try {
       await login(form.email, form.password);
-      // Wait for dbUser to be populated by AuthContext (already done via onAuthStateChanged)
-      // Redirect happens after context re-renders — we'll handle via useEffect below
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       const code = err.code;
       if (code === 'auth/user-not-found' || code === 'auth/invalid-credential') {
@@ -57,15 +40,9 @@ export default function Login() {
         setError('Login failed. Please check your credentials and try again.');
       }
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
-
-  // Redirect once login is complete and role is known
-  if (dbUser && role) {
-    navigate(getRedirectPath(role), { replace: true });
-    return null;
-  }
 
   return (
     <div
@@ -89,7 +66,6 @@ export default function Login() {
         }}
         className="fade-in"
       >
-        {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div
             style={{
@@ -110,7 +86,6 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
-          {/* Error banner */}
           {error && (
             <div
               style={{
@@ -130,14 +105,13 @@ export default function Login() {
           )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {/* Email */}
             <div className="form-group">
               <label className="form-label" htmlFor="login-email">Email address</label>
               <input
                 id="login-email"
                 name="email"
                 type="email"
-                className={`form-input${error ? ' error' : ''}`}
+                className="form-input"
                 placeholder="you@adit.ac.in"
                 value={form.email}
                 onChange={handleChange}
@@ -146,7 +120,6 @@ export default function Login() {
               />
             </div>
 
-            {/* Password */}
             <div className="form-group">
               <label className="form-label" htmlFor="login-password">Password</label>
               <div style={{ position: 'relative' }}>
@@ -154,7 +127,7 @@ export default function Login() {
                   id="login-password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
-                  className={`form-input${error ? ' error' : ''}`}
+                  className="form-input"
                   placeholder="••••••••"
                   value={form.password}
                   onChange={handleChange}
@@ -177,10 +150,12 @@ export default function Login() {
             <button
               type="submit"
               className="btn btn-primary btn-full"
-              disabled={loading}
+              disabled={submitting}
               id="login-submit"
             >
-              {loading ? <span className="spinner" style={{ width: 16, height: 16 }} /> : 'Sign in'}
+              {submitting
+                ? <span className="spinner" style={{ width: 16, height: 16 }} />
+                : 'Sign in'}
             </button>
           </div>
         </form>

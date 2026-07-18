@@ -16,6 +16,9 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Don't fetch until dbUser is loaded — prevents 401 errors on dashboard mount
+    if (!dbUser) return;
+
     const fetchAll = async () => {
       try {
         const [statsRes, noticesRes, resourcesRes] = await Promise.all([

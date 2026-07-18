@@ -1,31 +1,49 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-/**
- * ProtectedRoute — wraps pages that require authentication.
- * allowedRoles: if provided, only users with those roles can access.
- * Unauthorized role access redirects to /dashboard with a state flag for toast.
- */
 export default function ProtectedRoute({ children, allowedRoles }) {
-  const { user, role, loading } = useAuth();
+  const { user, dbUser, role, loading } = useAuth();
   const location = useLocation();
 
+  // Show spinner while Firebase auth OR MongoDB profile is loading
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-secondary text-sm">Loading CampusOS…</p>
-        </div>
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'var(--color-bg)',
+        gap: 12,
+      }}>
+        <div style={{
+          width: 40, height: 40,
+          border: '4px solid var(--color-border)',
+          borderTopColor: 'var(--color-primary)',
+          borderRadius: '50%',
+          animation: 'spin 0.8s linear infinite',
+        }} />
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
+          Loading CampusOS…
+        </p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
+  // Not logged in at all → go to login
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && role && !allowedRoles.includes(role)) {
+  // Logged in but MongoDB profile failed to load → send back to login
+  if (!dbUser) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Role-based access check
+  if (allowedRoles && !allowedRoles.includes(role)) {
     return (
       <Navigate
         to="/dashboard"
