@@ -10,6 +10,7 @@ const {
   createUser,
   deactivateUser,
   reactivateUser,
+  updateUserRole,
   getNotifications,
   markNotificationsRead,
   getStudentDashboardStats,
@@ -29,6 +30,7 @@ router.patch('/resources/:id/reject', authenticate, requireRole('faculty', 'admi
 router.get('/stats', authenticate, requireRole('admin'), getAdminStats);
 router.get('/users', authenticate, requireRole('admin'), getUsers);
 router.post('/users', authenticate, requireRole('admin'), createUser);
+router.patch('/users/:id/role', authenticate, requireRole('admin'), updateUserRole);
 router.patch('/users/:id/deactivate', authenticate, requireRole('admin'), deactivateUser);
 router.patch('/users/:id/reactivate', authenticate, requireRole('admin'), reactivateUser);
 

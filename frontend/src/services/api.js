@@ -49,6 +49,7 @@ export const getUsers = (params) => api.get('/admin/users', { params });
 export const createUser = (data) => api.post('/admin/users', data);
 export const deactivateUser = (id) => api.patch(`/admin/users/${id}/deactivate`);
 export const reactivateUser = (id) => api.patch(`/admin/users/${id}/reactivate`);
+export const updateUserRole = (id, role) => api.patch(`/admin/users/${id}/role`, { role });
 
 // ─── Notifications ────────────────────────────────────────────────────────
 export const getNotifications = () => api.get('/admin/notifications');

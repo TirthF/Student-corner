@@ -49,9 +49,23 @@ export function AuthProvider({ children }) {
     signInWithEmailAndPassword(auth, email, password);
 
   const register = async ({ name, enrollmentNo, email, branch, semester, password }) => {
-    // Step 1: Create Firebase account
-    const credential = await createUserWithEmailAndPassword(auth, email, password);
-    // Step 2: Create MongoDB profile
+    let credential;
+
+    try {
+      // Step 1: Try to create a new Firebase account
+      credential = await createUserWithEmailAndPassword(auth, email, password);
+    } catch (firebaseErr) {
+      if (firebaseErr.code === 'auth/email-already-in-use') {
+        // Firebase account exists but MongoDB profile may be missing (orphaned state).
+        // Sign in with the provided credentials to get a valid token, then upsert the profile.
+        credential = await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        // Re-throw any other Firebase errors (weak password, invalid email, etc.)
+        throw firebaseErr;
+      }
+    }
+
+    // Step 2: Upsert MongoDB profile (backend is idempotent — safe to call even if profile exists)
     const { data } = await registerProfile({ name, enrollmentNo, email, branch, semester });
     setDbUser(data.user);
     return credential;

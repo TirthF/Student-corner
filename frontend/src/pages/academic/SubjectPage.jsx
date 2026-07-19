@@ -53,8 +53,25 @@ export default function SubjectPage({ semester, branch, subject, breadcrumb }) {
     setDownloadingId(resource._id);
     try {
       const { data } = await downloadResource(resource._id);
-      window.open(data.fileUrl, '_blank');
-      toast.success(`Downloading "${resource.title}"`);
+
+      // Extract extension from Cloudinary URL, or default to .pdf
+      const urlPath = new URL(data.fileUrl).pathname;
+      const urlExt = urlPath.includes('.') ? urlPath.substring(urlPath.lastIndexOf('.')) : '';
+      const ext = urlExt || '.pdf'; // fallback — only PDFs are accepted on upload
+      const filename = `${resource.title}${ext}`;
+
+      const response = await fetch(data.fileUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success(`Downloading "${filename}"`);
     } catch {
       toast.error('Download failed. Please try again.');
     } finally {

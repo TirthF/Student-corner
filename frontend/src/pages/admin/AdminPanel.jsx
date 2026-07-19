@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import {
   getUsers, createUser, deactivateUser, reactivateUser,
   getPendingResources, approveResource, rejectResource,
+  updateUserRole,
 } from '../../services/api';
 import StatusBadge from '../../components/ui/StatusBadge';
 import EmptyState from '../../components/ui/EmptyState';
@@ -93,6 +94,17 @@ function UserManagementTab() {
     finally { setActionLoading(null); }
   };
 
+  const handleRoleChange = async (id, name, newRole) => {
+    if (!window.confirm(`Change ${name}'s role to "${newRole}"?`)) return;
+    setActionLoading(id + '-role');
+    try {
+      await updateUserRole(id, newRole);
+      setUsers((p) => p.map((u) => u._id === id ? { ...u, role: newRole } : u));
+      toast.success(`${name}'s role updated to ${newRole}.`);
+    } catch { toast.error('Failed to update role.'); }
+    finally { setActionLoading(null); }
+  };
+
   return (
     <div>
       {/* Controls */}
@@ -158,7 +170,21 @@ function UserManagementTab() {
                       ? <span className="badge badge-rejected">Deactivated</span>
                       : <span className="badge badge-published">Active</span>}
                   </td>
-                  <td>
+                  <td style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                    {/* Role changer */}
+                    <select
+                      className="form-select"
+                      style={{ fontSize: '0.8rem', padding: '3px 6px', width: 'auto', minWidth: 90 }}
+                      value={u.role}
+                      disabled={actionLoading === u._id + '-role'}
+                      onChange={(e) => handleRoleChange(u._id, u.name, e.target.value)}
+                      id={`role-select-${u._id}`}
+                    >
+                      <option value="student">Student</option>
+                      <option value="faculty">Faculty</option>
+                      <option value="admin">Admin</option>
+                    </select>
+
                     {u.isDeactivated ? (
                       <button className="btn btn-success btn-sm" onClick={() => handleReactivate(u._id, u.name)}
                         disabled={actionLoading === u._id} id={`reactivate-${u._id}`}>

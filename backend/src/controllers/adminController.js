@@ -217,6 +217,31 @@ const reactivateUser = async (req, res) => {
   }
 };
 
+/**
+ * PATCH /api/admin/users/:id/role
+ * Admin changes a user's role (student / faculty / admin).
+ */
+const updateUserRole = async (req, res) => {
+  try {
+    const { role } = req.body;
+    if (!['student', 'faculty', 'admin'].includes(role)) {
+      return res.status(400).json({ message: 'Invalid role. Must be student, faculty, or admin.' });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { $set: { role } },
+      { new: true }
+    );
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+
+    res.json({ message: `Role updated to ${role}.`, user });
+  } catch (error) {
+    console.error('UpdateRole error:', error);
+    res.status(500).json({ message: 'Server error.' });
+  }
+};
+
 // ─── Notifications ────────────────────────────────────────────────────────────
 
 /**
@@ -278,6 +303,7 @@ module.exports = {
   createUser,
   deactivateUser,
   reactivateUser,
+  updateUserRole,
   getNotifications,
   markNotificationsRead,
   getStudentDashboardStats,

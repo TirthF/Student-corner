@@ -69,10 +69,11 @@ export default function Register() {
       navigate('/dashboard', { replace: true });
     } catch (err) {
       const code = err.code;
-      if (code === 'auth/email-already-in-use') {
-        setErrors({ email: 'An account with this email already exists.' });
-      } else if (code === 'auth/weak-password') {
+      if (code === 'auth/weak-password') {
         setErrors({ password: 'Password is too weak. Use at least 8 characters with letters and numbers.' });
+      } else if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+        // Firebase account exists but the password entered is wrong
+        setErrors({ email: 'An account with this email already exists but the password is incorrect. Please sign in instead.' });
       } else if (err.response?.data?.message) {
         setServerError(err.response.data.message);
       } else {

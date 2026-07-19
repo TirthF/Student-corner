@@ -9,7 +9,7 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import toast from 'react-hot-toast';
 
 export default function StudentDashboard() {
-  const { dbUser } = useAuth();
+  const { dbUser, role } = useAuth();
   const [stats, setStats] = useState(null);
   const [notices, setNotices] = useState([]);
   const [recentResources, setRecentResources] = useState([]);
@@ -62,7 +62,8 @@ export default function StudentDashboard() {
           {greeting}, {firstName} 👋
         </h1>
         <p style={{ color: 'var(--color-text-secondary)' }}>
-          {dbUser?.branch} · Semester {dbUser?.semester} · {dbUser?.enrollmentNo || 'ADIT Student'}
+          {dbUser?.branch} · Semester {dbUser?.semester} ·{' '}
+          {role === 'faculty' ? 'Faculty Member' : role === 'admin' ? 'Administrator' : (dbUser?.enrollmentNo || 'ADIT Student')}
         </p>
       </div>
 
