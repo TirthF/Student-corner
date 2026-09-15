@@ -1,4 +1,4 @@
-# 🎓 CampusOS — ADIT Student Portal
+# 🎓 ADIT Student Portal
 
 > A full-stack student productivity platform for A.D. Patel Institute of Technology.
 > Built with React + Node.js + MongoDB + Firebase + Cloudinary.
