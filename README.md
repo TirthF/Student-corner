@@ -251,4 +251,4 @@ campusos/
 ---
 
 ## 👥 Team
-Built by a 4-member team from ADIT for SIH / Semester Project.
+Built by a 4-Friends
